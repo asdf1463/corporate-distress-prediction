@@ -59,11 +59,11 @@ ANALYZE.py
 
 | 변수 | 의미 |
 |---|---|
-| `roa` | 순이익 / 총자산 |
-| `signed_log_ocf` | 영업현금흐름의 부호 유지 로그값 |
-| `asset_turnover` | 매출액 / 총자산 |
-| `debt_to_assets` | 총부채 / 총자산 |
-| `log_assets` | 총자산 로그값, 기업 규모 |
+| `roa` | 순이익 / 총자산 (수익성) |
+| `signed_log_ocf` | 영업현금흐름의 부호 유지 로그값 (현금흐름) |
+| `asset_turnover` | 매출액 / 총자산 (회전성) |
+| `debt_to_assets` | 총부채 / 총자산 (재무 안정성) |
+| `log_assets` | 총자산 로그값 (기업 규모) |
 
 ## 실행 방법
 
