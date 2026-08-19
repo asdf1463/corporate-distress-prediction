@@ -89,8 +89,6 @@ Test 데이터는 정상 123건, 부실 47건으로 구성됐습니다.
 | `equity_ratio` | 자기자본 / 총자산 | 낮을수록 위험 |
 | `log_assets` | 기업 규모 | 작을수록 위험 |
 
-안정성 변수는 해석의 직관성을 높이기 위해 `debt_to_assets` 대신 `equity_ratio`를 최종 모델 Feature로 사용했습니다. 두 변수는 회계식상 매우 밀접한 정보를 담고 있어 Logistic Regression에서는 예측 성능이 동일하게 유지됐고, Random Forest에서도 실질적인 성능 차이는 거의 없었습니다. `debt_to_assets`는 참고 재무비율로 유지했습니다.
-
 동일한 Feature를 두 모델에 사용한 이유는 **Feature 차이가 아니라 모델 구조 자체의 차이**를 비교하기 위해서입니다.
 
 결측치는 Train 데이터의 중앙값으로 Train/Test 모두 대체했습니다. 이상치는 Train 데이터에서 계산한 1%~99% 분위수 범위를 Train/Test에 동일하게 적용했습니다. 이를 통해 Test 데이터의 정보를 전처리 단계에서 미리 사용하는 것을 피했습니다.
@@ -155,8 +153,6 @@ Random Forest에는 별도의 StandardScaler를 적용하지 않았습니다. Tr
 | `log_assets` | -1.0294 | 0.0000 | *** | 규모가 클수록 부실 가능성 감소 |
 
 계수 방향은 예상한 재무 해석과 대체로 일치했습니다. 특히 `roa`, `equity_ratio`, `log_assets`가 뚜렷하게 나타났습니다.
-
-`equity_ratio`는 기존 `debt_to_assets`와 반대 방향의 정보를 표현하는 변수이므로, 표준화된 Logistic Regression에서는 기존 +0.4323이 -0.4323으로 부호만 반전되고 나머지 계수, p-value 및 예측 성능은 동일하게 유지됐습니다.
 
 ### 6.2 Logistic Regression 다중공선성
 
@@ -250,7 +246,6 @@ Random Forest는 부실기업을 1건 더 탐지해 FN을 8건에서 7건으로 
 4. Logistic Regression은 동일 구간에서 Precision과 Accuracy가 더 높아 정상기업 오탐이 상대적으로 적었습니다.
 5. Logistic Regression은 계수 방향과 p-value를 통해 변수의 관계를 직접 해석할 수 있습니다.
 6. Random Forest에서는 `roa`가 가장 높은 Feature Importance를 보여 Logistic Regression과 공통적으로 수익성의 중요성이 확인됐습니다.
-7. 안정성 변수를 `debt_to_assets`에서 `equity_ratio`로 바꿔도 전체적인 모델 성능과 결론은 실질적으로 유지됐습니다.
 
 따라서 현재 데이터와 Feature 구성에서는 **Logistic Regression을 주요 해석 모델**, **Random Forest를 비선형 비교 모델**로 두는 것이 적절하다고 판단했습니다.
 
