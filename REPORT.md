@@ -86,8 +86,10 @@ Test 데이터는 정상 123건, 부실 47건으로 구성됐습니다.
 | `roa` | 순이익 / 총자산 | 낮을수록 위험 |
 | `signed_log_ocf` | 영업현금흐름 부호 유지 로그값 | 낮을수록 위험 |
 | `asset_turnover` | 매출액 / 총자산 | 낮을수록 위험 |
-| `debt_to_assets` | 총부채 / 총자산 | 높을수록 위험 |
+| `equity_ratio` | 자기자본 / 총자산 | 낮을수록 위험 |
 | `log_assets` | 기업 규모 | 작을수록 위험 |
+
+안정성 변수는 해석의 직관성을 높이기 위해 `debt_to_assets` 대신 `equity_ratio`를 최종 모델 Feature로 사용했습니다. 두 변수는 회계식상 매우 밀접한 정보를 담고 있어 Logistic Regression에서는 예측 성능이 동일하게 유지됐고, Random Forest에서도 실질적인 성능 차이는 거의 없었습니다. `debt_to_assets`는 참고 재무비율로 유지했습니다.
 
 동일한 Feature를 두 모델에 사용한 이유는 **Feature 차이가 아니라 모델 구조 자체의 차이**를 비교하기 위해서입니다.
 
@@ -149,10 +151,12 @@ Random Forest에는 별도의 StandardScaler를 적용하지 않았습니다. Tr
 | `roa` | -1.4092 | 0.0000 | *** | 수익성이 높을수록 부실 가능성 감소 |
 | `signed_log_ocf` | -0.3393 | 0.0016 | ** | 현금흐름이 좋을수록 부실 가능성 감소 |
 | `asset_turnover` | -0.2771 | 0.0174 | * | 자산 효율성이 높을수록 부실 가능성 감소 |
-| `debt_to_assets` | 0.4323 | 0.0005 | *** | 부채 부담이 높을수록 부실 가능성 증가 |
+| `equity_ratio` | -0.4323 | 0.0005 | *** | 자기자본비율이 높을수록 부실 가능성 감소 |
 | `log_assets` | -1.0294 | 0.0000 | *** | 규모가 클수록 부실 가능성 감소 |
 
-계수 방향은 예상한 재무 해석과 대체로 일치했습니다. 특히 `roa`, `debt_to_assets`, `log_assets`가 뚜렷하게 나타났습니다.
+계수 방향은 예상한 재무 해석과 대체로 일치했습니다. 특히 `roa`, `equity_ratio`, `log_assets`가 뚜렷하게 나타났습니다.
+
+`equity_ratio`는 기존 `debt_to_assets`와 반대 방향의 정보를 표현하는 변수이므로, 표준화된 Logistic Regression에서는 기존 +0.4323이 -0.4323으로 부호만 반전되고 나머지 계수, p-value 및 예측 성능은 동일하게 유지됐습니다.
 
 ### 6.2 Logistic Regression 다중공선성
 
@@ -161,7 +165,7 @@ Random Forest에는 별도의 StandardScaler를 적용하지 않았습니다. Tr
 | `roa` | 1.6353 |
 | `signed_log_ocf` | 1.3574 |
 | `asset_turnover` | 1.1699 |
-| `debt_to_assets` | 1.3550 |
+| `equity_ratio` | 1.3550 |
 | `log_assets` | 1.3579 |
 
 모든 변수의 VIF가 낮아, 현재 5개 변수 사이의 다중공선성 문제는 크지 않은 것으로 봤습니다.
@@ -170,13 +174,13 @@ Random Forest에는 별도의 StandardScaler를 적용하지 않았습니다. Tr
 
 | Feature | Importance |
 |---|---:|
-| `roa` | **0.5114** |
-| `signed_log_ocf` | 0.2019 |
-| `log_assets` | 0.1662 |
-| `debt_to_assets` | 0.0615 |
-| `asset_turnover` | 0.0590 |
+| `roa` | **0.5077** |
+| `signed_log_ocf` | 0.2016 |
+| `log_assets` | 0.1699 |
+| `equity_ratio` | 0.0612 |
+| `asset_turnover` | 0.0596 |
 
-Random Forest에서는 `roa`의 Feature Importance가 0.5114로 가장 높았고, `signed_log_ocf`, `log_assets`가 뒤를 이었습니다.
+Random Forest에서는 `roa`의 Feature Importance가 0.5077로 가장 높았고, `signed_log_ocf`, `log_assets`가 뒤를 이었습니다.
 
 특히 `roa`는 Logistic Regression에서도 가장 큰 절댓값의 계수(-1.4092, p<0.001)를 보여, 서로 다른 모델에서도 **수익성 악화가 강한 부실 구분 신호**로 나타났습니다.
 
@@ -187,20 +191,20 @@ Random Forest에서는 `roa`의 Feature Importance가 0.5114로 가장 높았고
 | Model | ROC-AUC | Average Precision (AP) |
 |---|---:|---:|
 | **GLM Logistic Regression** | **0.8838** | 0.7516 |
-| **Random Forest** | 0.8829 | **0.7597** |
+| **Random Forest** | 0.8831 | **0.7632** |
 
 Test 데이터의 부실 비중은 47/170으로 약 27.6%입니다.
 
-두 모델의 ROC-AUC 차이는 0.0009로 매우 작았습니다. 즉 현재 5개 Feature와 Out-of-Time 테스트셋에서는 **Random Forest의 비선형 구조가 추가적인 전체 구분 성능 개선으로 이어지지 않았습니다.**
+두 모델의 ROC-AUC 차이는 0.0007로 매우 작았습니다. 즉 현재 5개 Feature와 Out-of-Time 테스트셋에서는 **Random Forest의 비선형 구조가 추가적인 전체 구분 성능 개선으로 이어지지 않았습니다.**
 
-반면 부실 클래스의 Precision-Recall 성능을 요약하는 Average Precision에서는 Random Forest가 0.7597로 Logistic Regression의 0.7516보다 소폭 높았습니다. 다만 차이가 크지는 않아 두 모델의 성능을 단순히 한 지표만으로 우열화하기보다는 Threshold별 결과와 함께 해석했습니다.
+반면 부실 클래스의 Precision-Recall 성능을 요약하는 Average Precision에서는 Random Forest가 0.7632로 Logistic Regression의 0.7516보다 소폭 높았습니다. 다만 차이가 크지는 않아 두 모델의 성능을 단순히 한 지표만으로 우열화하기보다는 Threshold별 결과와 함께 해석했습니다.
 
 ### 6.5 Threshold별 성능 비교
 
 | Threshold | Model | Accuracy | Precision | Recall |
 |---:|---|---:|---:|---:|
 | 50% | Logistic | **78.2%** | **57.4%** | 83.0% |
-|  | Random Forest | 76.5% | 54.8% | **85.1%** |
+|  | Random Forest | 77.1% | 55.6% | **85.1%** |
 | 60% | Logistic | **82.9%** | **66.1%** | 78.7% |
 |  | Random Forest | 81.2% | 61.5% | **85.1%** |
 | 70% | Logistic | **85.3%** | **72.9%** | 74.5% |
@@ -217,9 +221,9 @@ Test 데이터의 부실 비중은 47/170으로 약 27.6%입니다.
 | Model | TN | FP | FN | TP |
 |---|---:|---:|---:|---:|
 | Logistic Regression | 94 | 29 | 8 | 39 |
-| Random Forest | 90 | 33 | 7 | 40 |
+| Random Forest | 91 | 32 | 7 | 40 |
 
-Random Forest는 부실기업을 1건 더 탐지해 FN을 8건에서 7건으로 줄였지만, 정상기업 오탐 FP는 29건에서 33건으로 증가했습니다.
+Random Forest는 부실기업을 1건 더 탐지해 FN을 8건에서 7건으로 줄였지만, 정상기업 오탐 FP는 29건에서 32건으로 증가했습니다.
 
 #### Threshold = 60%
 
@@ -240,12 +244,13 @@ Random Forest는 부실기업을 1건 더 탐지해 FN을 8건에서 7건으로 
 
 결과는 다음과 같습니다.
 
-1. ROC-AUC는 Logistic Regression 0.8838, Random Forest 0.8829로 사실상 유사했습니다.
-2. Average Precision에서는 Random Forest가 0.7597로 소폭 높았습니다.
+1. ROC-AUC는 Logistic Regression 0.8838, Random Forest 0.8831로 사실상 유사했습니다.
+2. Average Precision에서는 Random Forest가 0.7632로 소폭 높았습니다.
 3. Random Forest는 50~60% Threshold에서 Recall이 더 높아 부실기업 누락을 줄였습니다.
 4. Logistic Regression은 동일 구간에서 Precision과 Accuracy가 더 높아 정상기업 오탐이 상대적으로 적었습니다.
 5. Logistic Regression은 계수 방향과 p-value를 통해 변수의 관계를 직접 해석할 수 있습니다.
 6. Random Forest에서는 `roa`가 가장 높은 Feature Importance를 보여 Logistic Regression과 공통적으로 수익성의 중요성이 확인됐습니다.
+7. 안정성 변수를 `debt_to_assets`에서 `equity_ratio`로 바꿔도 전체적인 모델 성능과 결론은 실질적으로 유지됐습니다.
 
 따라서 현재 데이터와 Feature 구성에서는 **Logistic Regression을 주요 해석 모델**, **Random Forest를 비선형 비교 모델**로 두는 것이 적절하다고 판단했습니다.
 
@@ -259,9 +264,9 @@ Random Forest는 부실기업을 1건 더 탐지해 FN을 8건에서 7건으로 
 
 KRX KIND 공시에서 부실 후보를 만들고, OpenDART 공시 및 사업보고서 재무제표를 연결하고, SQLite에 저장한 뒤 신용분석 관점의 재무변수를 구성했습니다. 이후 과거 시점 데이터로 학습하고 이후 시점 데이터에서 검증하는 Out-of-Time 구조를 적용했습니다.
 
-5개 재무변수만으로 Logistic Regression은 테스트 ROC-AUC 0.8838, Random Forest는 0.8829를 기록했습니다. Random Forest가 더 복잡한 모델임에도 ROC-AUC 개선은 거의 없었고, 두 모델 모두 `roa`를 주요 부실 구분 신호로 활용했습니다.
+5개 재무변수만으로 Logistic Regression은 테스트 ROC-AUC 0.8838, Random Forest는 0.8831을 기록했습니다. Random Forest가 더 복잡한 모델임에도 ROC-AUC 개선은 거의 없었고, 두 모델 모두 `roa`를 주요 부실 구분 신호로 활용했습니다.
 
-이를 통해 단순히 모델의 복잡도를 높이기보다 **해석 가능성, 부실 누락 비용, 정상기업 오탐 비용, 실제 업무 목적에 따른 Threshold 선택**을 함께 고려해야 한다는 점을 확인했습니다.
+안정성 변수는 `equity_ratio`를 사용해 **자기자본비율이 낮을수록 부실 가능성이 높아지는 방향**으로 해석했습니다. 이를 통해 단순히 모델의 복잡도를 높이기보다 **해석 가능성, 부실 누락 비용, 정상기업 오탐 비용, 실제 업무 목적에 따른 Threshold 선택**을 함께 고려해야 한다는 점을 확인했습니다.
 
 ---
 
@@ -270,6 +275,6 @@ KRX KIND 공시에서 부실 후보를 만들고, OpenDART 공시 및 사업보�
 - KIND 공시 기반 라벨은 실제 법적 부도와 완전히 동일하지 않을 수 있습니다.
 - 정상군은 무작위 추출 방식이므로 산업, 규모, 연도를 고려한 매칭을 추가하면 더 엄밀한 대조군을 구성할 수 있습니다.
 - DART API 응답 실패나 공시 데이터 상태에 따라 재수집 결과가 일부 달라질 수 있습니다.
-- 현재 모델은 특정 사업연도의 재무 수준을 중심으로 구성되어 있어, 다년도 데이터를 활용한 매출·ROA·부채비율·현금흐름 변화율을 추가할 여지가 있습니다.
+- 현재 모델은 특정 사업연도의 재무 수준을 중심으로 구성되어 있어, 다년도 데이터를 활용한 매출·ROA·자기자본비율·현금흐름 변화율을 추가할 여지가 있습니다.
 - 산업별 재무구조 차이를 반영하기 위해 산업 평균 대비 상대지표를 추가할 수 있습니다.
 - 향후 XGBoost 등 다른 모델을 추가 비교할 수 있지만, 이번 Random Forest 비교 결과를 고려하면 모델 수를 늘리는 것보다 데이터 및 Feature 확장을 우선 검토하는 것이 더 자연스러운 개선 방향입니다.
