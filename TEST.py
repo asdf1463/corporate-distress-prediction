@@ -19,12 +19,12 @@ MODEL_FEATURES = [
     'roa',
     'signed_log_ocf',
     'asset_turnover',
-    'debt_to_assets',
+    'equity_ratio',
     'log_assets'
 ]
 
 REFERENCE_RATIOS = [
-    'debt_ratio', 'equity_ratio', 'current_ratio', 'op_margin', 'net_margin',
+    'debt_ratio', 'debt_to_assets', 'current_ratio', 'op_margin', 'net_margin',
     'roe', 'interest_coverage', 'interest_coverage_raw', 'ocf_to_assets',
     'ocf_to_debt', 'retained_earnings_ratio', 'working_capital_ratio',
     'operating_profit_to_assets'
