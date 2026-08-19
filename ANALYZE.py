@@ -20,7 +20,7 @@ FEATURES = [
     'roa',
     'signed_log_ocf',
     'asset_turnover',
-    'debt_to_assets',
+    'equity_ratio',
     'log_assets'
 ]
 
