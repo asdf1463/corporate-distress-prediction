@@ -2,9 +2,9 @@
 
 KRX KIND 공시와 OpenDART 사업보고서 재무제표를 연결해 상장기업의 부실 가능성을 예측한 프로젝트입니다.
 
-이 프로젝트는 단순히 모델 성능을 높이는 것보다 **부실 라벨 설계 → 정상 대조군 구성 → 재무제표 수집 → Feature 생성 → Out-of-Time 검증 → 모델 비교**의 전체 분석 파이프라인을 직접 구성하는 데 초점을 뒀습니다.
+이 프로젝트는 단순히 모델 성능을 높이는 것보다 부실 라벨 설계 → 정상 대조군 구성 → 재무제표 수집 → Feature 생성 → Out-of-Time 검증 → 모델 비교의 전체 분석 파이프라인을 직접 구성하는 데 초점을 뒀습니다.
 
-GLM Logistic Regression을 해석 가능한 기준 모델로 사용하고, 동일한 5개 재무변수와 동일한 테스트셋에 Random Forest를 추가해 **동일한 데이터 조건에서 선형 모델과 비선형 모델의 예측 성능을 비교**했습니다.
+GLM Logistic Regression을 해석 가능한 기준 모델로 사용하고, 동일한 5개 재무변수와 동일한 테스트셋에 Random Forest를 추가해 동일한 데이터 조건에서 선형 모델과 비선형 모델의 예측 성능을 비교했습니다.
 
 ## 프로젝트 흐름
 
@@ -48,7 +48,7 @@ ANALYZE.py
 
 ## 데이터와 Feature
 
-최종 분석 데이터는 **903건(정상 599 / 부실 304)**입니다.
+최종 분석 데이터는 903건(정상 599 / 부실 304)입니다.
 
 두 모델에는 동일한 5개 재무변수를 사용했습니다.
 
@@ -62,8 +62,8 @@ ANALYZE.py
 
 Train/Test는 사업연도를 기준으로 나눴습니다.
 
-- Train: **2023년 이하 733건**
-- Test: **2024년 이상 170건**
+- Train: 2023년 이하 733건
+- Test: 2024년 이상 170건
 - Test 라벨: 정상 123 / 부실 47
 - 결측치: Train 중앙값으로 Train/Test 모두 대체
 - 이상치: Train 1%~99% quantile 기준 clipping
@@ -72,7 +72,7 @@ Train/Test는 사업연도를 기준으로 나눴습니다.
   - Logistic Regression: class-balanced sample weight
   - Random Forest: `class_weight='balanced'`
 
-연도 기준으로 분리한 이유는 실제 사용 상황처럼 **과거 데이터로 학습하고 이후 시점의 기업을 평가하는 Out-of-Time 검증**을 하기 위해서입니다.
+연도 기준으로 분리한 이유는 실제 사용 상황처럼 과거 데이터로 학습하고 이후 시점의 기업을 평가하는 Out-of-Time 검증을 하기 위해서입니다.
 
 ## 모델
 
@@ -135,8 +135,8 @@ python ANALYZE.py
 
 | Model | ROC-AUC | Average Precision |
 |---|---:|---:|
-| **GLM Logistic Regression** | **0.8838** | 0.7516 |
-| **Random Forest** | 0.8831 | **0.7632** |
+| GLM Logistic Regression | 0.8838 | 0.7516 |
+| Random Forest | 0.8831 | 0.7632 |
 
 두 모델의 ROC-AUC는 사실상 유사했습니다. Random Forest는 Average Precision과 일부 Threshold의 Recall이 소폭 높았지만, Logistic Regression은 같은 구간에서 Precision과 Accuracy가 더 높았습니다.
 
@@ -146,8 +146,8 @@ python ANALYZE.py
 
 ## 정리
 
-현재 5개 Feature 구성에서는 Random Forest의 비선형 구조가 ROC-AUC 개선으로 이어지지 않았습니다. 따라서 Logistic Regression을 **주요 해석 모델**, Random Forest를 **비선형 비교 모델**로 두었습니다.
+현재 5개 Feature 구성에서는 Random Forest의 비선형 구조가 ROC-AUC 개선으로 이어지지 않았습니다. 따라서 Logistic Regression을 주요 해석 모델, Random Forest를 비선형 비교 모델로 두었습니다.
 
-다음 개선에서는 모델 수를 늘리기보다 산업·규모·연도를 고려한 정상군 매칭, 다년도 재무 변화율, 산업 상대지표 등 **데이터와 Feature 정보량을 확장하는 방향**을 우선 검토할 수 있습니다.
+다음 개선에서는 모델 수를 늘리기보다 산업·규모·연도를 고려한 정상군 매칭, 다년도 재무 변화율, 산업 상대지표 등 데이터와 Feature 정보량을 확장하는 방향을 우선 검토할 수 있습니다.
 
-데이터 구성 과정, 회귀계수·VIF·Feature Importance, Threshold별 성능과 Confusion Matrix, 한계 및 개선 방향은 **[REPORT.md](REPORT.md)**에 상세히 정리했습니다.
+데이터 구성 과정, 회귀계수·VIF·Feature Importance, Threshold별 성능과 Confusion Matrix, 한계 및 개선 방향은 [REPORT.md](REPORT.md)에 상세히 정리했습니다.
