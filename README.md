@@ -60,8 +60,6 @@ ANALYZE.py
 | `equity_ratio` | 자기자본 / 총자산 | 재무 안정성 |
 | `log_assets` | 총자산 로그값 | 기업 규모 |
 
-안정성 변수는 해석의 직관성을 높이기 위해 `debt_to_assets` 대신 `equity_ratio`를 최종 모델 Feature로 사용했습니다. `debt_to_assets`는 참고 재무비율로 유지했습니다.
-
 Train/Test는 사업연도를 기준으로 나눴습니다.
 
 - Train: **2023년 이하 733건**
