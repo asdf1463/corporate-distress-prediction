@@ -15,13 +15,13 @@ MODEL_FEATURES = [
     'roa',             # 수익성: 순이익 / 총자산
     'signed_log_ocf',  # 현금흐름: 부호 유지 로그 변환 영업현금흐름
     'asset_turnover',  # 활동성: 매출액 / 총자산
-    'debt_to_assets',  # 안정성: 총부채 / 총자산
+    'equity_ratio',    # 안정성: 자기자본 / 총자산
     'log_assets'       # 규모: ln(총자산)
 ]
 
 REFERENCE_RATIOS = [
     'debt_ratio',
-    'equity_ratio',
+    'debt_to_assets',
     'current_ratio',
     'op_margin',
     'net_margin',
@@ -145,7 +145,7 @@ def add_model_features(df):
         np.log1p(np.abs(df['operating_cash_flow']))
     )
     df['asset_turnover'] = safe_div(df['revenue'], df['total_assets'])
-    df['debt_to_assets'] = safe_div(df['total_liab'], df['total_assets'])
+    df['equity_ratio'] = safe_div(df['total_equity'], df['total_assets'], scale=100)
     df['log_assets'] = np.log(df['total_assets'])
 
     return df
@@ -158,7 +158,7 @@ def add_reference_ratios(df):
     df = df.copy()
 
     df['debt_ratio'] = safe_div(df['total_liab'], df['total_equity'], scale=100)
-    df['equity_ratio'] = safe_div(df['total_equity'], df['total_assets'], scale=100)
+    df['debt_to_assets'] = safe_div(df['total_liab'], df['total_assets'])
     df['current_ratio'] = safe_div(df['current_assets'], df['current_liab'], scale=100)
     df['op_margin'] = safe_div(df['operating_profit'], df['revenue'], scale=100)
     df['net_margin'] = safe_div(df['net_income'], df['revenue'], scale=100)
