@@ -57,8 +57,10 @@ ANALYZE.py
 | `roa` | 순이익 / 총자산 | 수익성 |
 | `signed_log_ocf` | 영업현금흐름의 부호 유지 로그값 | 현금창출력 |
 | `asset_turnover` | 매출액 / 총자산 | 자산 효율성 |
-| `debt_to_assets` | 총부채 / 총자산 | 부채 부담 |
+| `equity_ratio` | 자기자본 / 총자산 | 재무 안정성 |
 | `log_assets` | 총자산 로그값 | 기업 규모 |
+
+안정성 변수는 해석의 직관성을 높이기 위해 `debt_to_assets` 대신 `equity_ratio`를 최종 모델 Feature로 사용했습니다. `debt_to_assets`는 참고 재무비율로 유지했습니다.
 
 Train/Test는 사업연도를 기준으로 나눴습니다.
 
@@ -123,9 +125,10 @@ $env:DART_API_KEY="본인_API_KEY"
 python DART_API.py
 ```
 
-이미 생성된 `dart_finance.db`가 있다면 API 호출 없이 분석 단계만 다시 실행할 수 있습니다.
+이미 생성된 `dart_finance.db`가 있다면 API 호출 없이 Feature와 분석 단계만 다시 실행할 수 있습니다.
 
 ```bash
+python FEATURES.py
 python TEST.py
 python ANALYZE.py
 ```
@@ -135,13 +138,13 @@ python ANALYZE.py
 | Model | ROC-AUC | Average Precision |
 |---|---:|---:|
 | **GLM Logistic Regression** | **0.8838** | 0.7516 |
-| **Random Forest** | 0.8829 | **0.7597** |
+| **Random Forest** | 0.8831 | **0.7632** |
 
 두 모델의 ROC-AUC는 사실상 유사했습니다. Random Forest는 Average Precision과 일부 Threshold의 Recall이 소폭 높았지만, Logistic Regression은 같은 구간에서 Precision과 Accuracy가 더 높았습니다.
 
 예를 들어 60% Threshold에서는 Random Forest가 Logistic Regression보다 부실기업을 3건 더 탐지해 FN을 10건에서 7건으로 줄였지만, 정상기업 오탐 FP는 19건에서 25건으로 증가했습니다.
 
-또한 `roa`는 Logistic Regression에서 가장 큰 절댓값의 계수를 보였고, Random Forest에서도 가장 높은 Feature Importance를 보여 두 모델에서 공통적으로 강한 부실 구분 신호로 나타났습니다.
+또한 `roa`는 Logistic Regression에서 가장 큰 절댓값의 계수를 보였고, Random Forest에서도 가장 높은 Feature Importance를 보여 두 모델에서 공통적으로 강한 부실 구분 신호로 나타났습니다. `equity_ratio`의 Logistic 계수는 -0.4323으로, 자기자본비율이 높을수록 부실 가능성이 낮아지는 방향이었습니다.
 
 ## 정리
 
